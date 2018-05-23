@@ -1,8 +1,9 @@
-import csv
+import csv,time,re 
 from selenium import webdriver
 from bs4 import BeautifulSoup,Comment
-import time
 
+####
+#Stage 1 - get to Odds Page for sport
 #Set website base url
 base_url = "https://bet365.com"
 #sports_url = base_url+"/sports-betting"
@@ -26,7 +27,8 @@ time.sleep(5)
 #finds all subpage links from middle page for different leagues
 elements = driver.find_elements_by_xpath("//div[starts-with(@class,'sm-CouponLink ')]")
 
-#loads 4th link for testing
+#loads 4th link for testing (Soccer - UK List)
+#TODO - Expand to cover all 365 Soccer Lists
 elements[3].click()
 time.sleep(5)
 
@@ -34,22 +36,24 @@ time.sleep(5)
 #recursive testing start from here (after reloading UK List)
 market_groups = driver.find_elements_by_xpath("//div[starts-with(@class,'gl-MarketGroup cm-CouponMarketGroup')]")
 #loads second link for testing
-market_groups[1].find_element_by_xpath(".//div[starts-with(@class,'sl-CouponParticipantWithBookCloses')]").click()
-
+market_groups[1].find_element_by_xpath(".//div[@class='sl-CouponFixtureLinkParticipant_Name ']").click()
+time.sleep(3)
 ###ISSUE - element not visible for selenium to expand/contract option
 #doesnt include gl-MarketGroup_Open
 driver.find_elements_by_xpath("//div[starts-with(@class, 'gl-MarketGroupButton ')][not (contains(@class, 'gl-MarketGroup_Open'))]")
 mylen = len(driver.find_elements_by_xpath("//div[starts-with(@class, 'gl-MarketGroupButton ')][not (contains(@class, 'gl-MarketGroup_Open'))]"))
 
 for i in range (0,mylen-1):
-    driver.find_elements_by_xpath("//div[starts-with(@class, 'gl-MarketGroupButton ')][not (contains(@class, 'gl-MarketGroup_Open'))]")[mylen-1-i].click()
-    time.sleep(2)
+    driver.find_element_by_xpath("//div[starts-with(@class, 'gl-MarketGroupButton ')][not (contains(@class, 'gl-MarketGroup_Open'))]").click()
+    time.sleep(1)
 
 
 
 
 
-
+#Stage 2 - parse odds
 #loads code into soup var
 soup = BeautifulSoup(driver.page_source, 'lxml')
-marketgps = soup.findAll("div", class_="gl-MarketGroup ")
+#marketgps = soup.findAll("div", {"class": re.compile('gl-MarketGroup *')}) #class_="gl-MarketGroup*")
+marketgps = soup.findAll("div",class_='gl-Participant')
+len(marketgps)
